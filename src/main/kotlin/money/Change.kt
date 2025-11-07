@@ -27,16 +27,19 @@ class Change {
     }
 
     private fun modify(element: MonetaryElement, count: Int): Change {
-        val newCount = (map[element] ?: 0) + count
-        if (newCount < 0) {
-            throw IllegalArgumentException("Resulting count is less than zero.")
+        val current  = map[element] ?: 0
+        val sum = current.toLong() + count.toLong()
+        if (sum < 0L || sum > Int.MAX_VALUE.toLong()) {
+            throw IllegalArgumentException("Invalid count modification for $element: count =$count, current=$current")
         }
+        val newCount = sum.toInt()
+
         if (newCount == 0) {
             map.remove(element)
         } else {
             map[element] = newCount
         }
-        total += element.minorValue * count
+        total += element.minorValue.toLong() * count
         return this
     }
 

@@ -15,7 +15,14 @@ class CashRegister(private val change: Change) {
      *
      * @throws TransactionException If the transaction cannot be performed.
      */
-    fun performTransaction(price: Long, amountPaid: Change): Change {
+    fun performTransaction(price: Long, amountPaid: Change): Change =
+        performTransaction(price, amountPaid, false)
+
+    /**
+     * Overloaded version - used for testing or simulation.
+     * Does NOT mutate the drawer (safe for Change.max())
+     */
+    fun performTransaction(price: Long, amountPaid: Change, simulateOnly: Boolean): Change {
         require(price >= 0L) { "Price must be a positive number." }
 
         val paidTotal = amountPaid.total
@@ -25,7 +32,7 @@ class CashRegister(private val change: Change) {
 
         val changeDue = paidTotal - price
         if (changeDue == 0L) {
-            addAll(change, amountPaid)
+            if (!simulateOnly) addAll(change, amountPaid)
             return Change.none()
         }
 
@@ -33,8 +40,10 @@ class CashRegister(private val change: Change) {
 
         val changeToGive = makeChangeFromInventory(tempDrawer, changeDue) ?: throw TransactionException("Insufficient change.")
 
-        addAll(change, amountPaid)
-        removeAll(change,changeToGive)
+        if(!simulateOnly) {
+            addAll(change, amountPaid)
+            removeAll(change,changeToGive)
+        }
 
         return changeToGive
     }
@@ -52,8 +61,12 @@ class CashRegister(private val change: Change) {
 
     private fun addAll(dst: Change, src: Change) {
         for (e in src.getElements()) {
-            val c = src.getCount(e)
-            if ( c > 0) dst.add(e,c)
+            val inc = src.getCount(e)
+            if (inc <= 0) continue
+            val current = dst.getCount(e)
+            val room = Int.MAX_VALUE - current
+            val toAdd = if (room >= inc) inc else room
+            if (toAdd > 0) dst.add(e, toAdd)
         }
     }
 

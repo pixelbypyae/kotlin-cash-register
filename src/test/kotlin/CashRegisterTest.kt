@@ -77,4 +77,23 @@ class CashRegisterTest {
         assertTrue(change.getCount(Bill.TWO_HUNDRED_EURO) >= 2 || change.getCount(Bill.ONE_HUNDRED_EURO) >= 4)
     }
 
+    @Test
+    fun `greedy algorithm gives minimum change`() {
+        val drawer = Change.max()
+        val reg = CashRegister(drawer)
+
+        val price = 758L
+        val paid = Change().apply { add(Bill.TEN_EURO, 1) }
+        val change = reg.performTransaction(price = price, amountPaid = paid, simulateOnly = true)
+
+        println("change give: $change")
+
+        assertEquals(242L, change.total, "Change due: 2 euro and 42 cents")
+
+        assertEquals(1, change.getCount(Coin.TWO_EURO))
+        assertEquals(2, change.getCount(Coin.TWENTY_CENT))
+        assertEquals(1, change.getCount(Coin.TWO_CENT))
+        assertEquals(0, change.getCount(Coin.ONE_CENT))
+    }
+
 }
