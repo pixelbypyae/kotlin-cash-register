@@ -11,6 +11,83 @@ class CashRegisterTest {
     }
 
     @Test
+    fun `negative price throws exception`() {
+        val drawer = drawerOne()
+        val reg = CashRegister(drawer)
+
+        val price = -100L
+        val paid = Change().apply { add(Bill.TEN_EURO,1) }
+
+        val ex = assertThrows(IllegalArgumentException::class.java) {
+            reg.performTransaction(price = price, amountPaid = paid)
+        }
+        assertTrue(ex.message!!.contains("Price must be a positive number."))
+    }
+
+    @Test
+    fun `exact payment simulateOnly=true does not mutate drawer`() {
+        val drawer = drawerOne()
+        val beforeTotal = drawer.total
+        val reg = CashRegister(drawer)
+
+        val paid = Change().apply { add(Bill.TEN_EURO,1) }
+        val change = reg.performTransaction(price = 1000, amountPaid = paid, simulateOnly = true)
+
+        assertEquals(0L, change.total, "No change expected")
+        assertEquals(beforeTotal, drawer.total, "Drawer should not be mutated")
+
+        val change2 = reg.performTransaction(price = 1000, amountPaid = paid)
+
+        assertEquals(0L, change2.total, "No change expected")
+        assertEquals(beforeTotal + 1000, drawer.total, "Drawer should be mutated")
+    }
+
+    @Test
+    fun `zero price path returns all paid as change drawer unchanged in both modes`() {
+        val drawer = Change().apply {
+            add(Coin.TWENTY_CENT, 10)
+            add(Coin.TEN_CENT,10)
+        }
+
+        val reg = CashRegister(drawer)
+        val before = drawer.total
+
+        val paid = Change().apply { add(Coin.TWENTY_CENT, 3) }
+
+        val c1 = reg.performTransaction(price = 0, amountPaid = paid, simulateOnly = true)
+        assertEquals(60L,c1.total)
+
+        // drawer unchanged
+
+        val c2 = reg.performTransaction(price = 0, amountPaid = paid)
+        assertEquals(60L,c2.total)
+        assertEquals(before, drawer.total)
+    }
+
+    @Test
+    fun `drawer mutation removes given change`() {
+        val drawer = Change().apply {
+            add(Bill.TEN_EURO, 1)
+            add(Coin.TWO_EURO,1)
+            add(Coin.TWENTY_CENT, 2)
+            add(Coin.TWO_CENT, 1)
+        }
+        val reg = CashRegister(drawer)
+
+        val paid = Change().apply { add(Bill.TEN_EURO,1) }
+        val price = 758L
+        val before = drawer.total
+        val change = reg.performTransaction(price = price, amountPaid = paid)
+
+        assertEquals(242L,change.total)
+
+        assertEquals(before + price, drawer.total)
+
+        assertEquals(0, drawer.getCount(Coin.TWENTY_CENT))
+        assertEquals(0, drawer.getCount(Coin.TWO_CENT))
+    }
+
+    @Test
     fun exactPayment_noChange() {
         val drawer = drawerOne()
         val reg = CashRegister(drawer)
