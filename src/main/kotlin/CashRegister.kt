@@ -68,7 +68,7 @@ class CashRegister(private val change: Change) {
         var remaining = amount
         val result = Change()
 
-        val denominations = (Bill.values().asList() + Coin.values().asList()).sortedByDescending { it.minorValue }
+        val denominations = (Bill.entries + Coin.entries).sortedByDescending { it.minorValue }
 
         for (d in denominations) {
             if (remaining <= 0L) break

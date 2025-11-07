@@ -57,8 +57,8 @@ class Change {
     companion object {
         fun max(): Change {
             val change = Change()
-            Bill.values().forEach { change.add(it, Int.MAX_VALUE) }
-            Coin.values().forEach { change.add(it, Int.MAX_VALUE) }
+            Bill.entries.forEach { change.add(it, Int.MAX_VALUE) }
+            Coin.entries.forEach { change.add(it, Int.MAX_VALUE) }
             return change
         }
 
