@@ -36,7 +36,9 @@ class CashRegister(private val change: Change) {
             return Change.none()
         }
 
-        val tempDrawer = copyOf(change).also { addAll(it,amountPaid)}
+        val tempDrawer = copyOf(change).also {
+            if (!simulateOnly) addAll(it,amountPaid)
+        }
 
         val changeToGive = makeChangeFromInventory(tempDrawer, changeDue) ?: throw TransactionException("Insufficient change.")
 
@@ -61,12 +63,8 @@ class CashRegister(private val change: Change) {
 
     private fun addAll(dst: Change, src: Change) {
         for (e in src.getElements()) {
-            val inc = src.getCount(e)
-            if (inc <= 0) continue
-            val current = dst.getCount(e)
-            val room = Int.MAX_VALUE - current
-            val toAdd = if (room >= inc) inc else room
-            if (toAdd > 0) dst.add(e, toAdd)
+            val c = src.getCount(e)
+            if ( c > 0) dst.add(e,c)
         }
     }
 
