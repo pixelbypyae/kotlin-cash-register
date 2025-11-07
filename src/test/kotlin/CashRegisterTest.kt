@@ -11,13 +11,15 @@ class CashRegisterTest {
     }
 
     @Test
-    fun `negative price throws exception`() {
+    fun `throws exception when price is negative`() {
+        // Given
         val drawer = drawerOne()
         val reg = CashRegister(drawer)
 
         val price = -100L
         val paid = Change().apply { add(Bill.TEN_EURO,1) }
 
+        // When / Then
         val ex = assertThrows(IllegalArgumentException::class.java) {
             reg.performTransaction(price = price, amountPaid = paid)
         }
@@ -58,6 +60,7 @@ class CashRegisterTest {
         assertEquals(60L,c1.total)
 
         // drawer unchanged
+        assertEquals(before, drawer.total)
 
         val c2 = reg.performTransaction(price = 0, amountPaid = paid)
         assertEquals(60L,c2.total)
@@ -88,7 +91,7 @@ class CashRegisterTest {
     }
 
     @Test
-    fun exactPayment_noChange() {
+    fun `exactPayment noChange`() {
         val drawer = drawerOne()
         val reg = CashRegister(drawer)
 
@@ -100,7 +103,7 @@ class CashRegisterTest {
     }
 
     @Test
-    fun normalPurchase_returnsCorrectChange() {
+    fun `normalPurchase returnsCorrectChange`() {
         val drawer = drawerOne()
         val reg = CashRegister(drawer)
 
@@ -116,7 +119,7 @@ class CashRegisterTest {
     }
 
     @Test
-    fun insufficientPayment_returnsCorrectChange() {
+    fun `insufficientPayment returns CorrectChange`() {
         val drawer = drawerOne()
         val reg = CashRegister(drawer)
 
@@ -129,7 +132,7 @@ class CashRegisterTest {
     }
 
     @Test
-    fun notEnoughChangeInDrawer_throwsException() {
+    fun `notEnoughChangeInDrawer throwsException`() {
         val drawer = Change()
         val reg = CashRegister(drawer)
 
@@ -141,7 +144,7 @@ class CashRegisterTest {
     }
 
     @Test
-    fun largeTransaction_usesLargestBillFirst() {
+    fun `largeTransaction usesLargestBillFirst`() {
         val drawer = drawerOne()
         val reg = CashRegister(drawer)
 
